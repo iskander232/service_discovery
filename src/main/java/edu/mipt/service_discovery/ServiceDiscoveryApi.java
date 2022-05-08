@@ -2,17 +2,10 @@ package edu.mipt.service_discovery;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.mipt.service_discovery.dto.ApiRequest;
-import edu.mipt.service_discovery.dto.ApiResponse;
-import edu.mipt.service_discovery.dto.EndpointDto;
-import edu.mipt.service_discovery.dto.EndpointMapping;
-import edu.mipt.service_discovery.dto.EnvoyId;
+import edu.mipt.service_discovery.dto.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -26,15 +19,15 @@ public class ServiceDiscoveryApi {
     int version_id;
 
     String contoller_url = "http://localhost:8079/controller/add-config";
-    List<ApiRequest> requests;
+    List<ApiRequestPart> requests;
     int last_id = 0;
 
-    private final ApiRequest request1 = ApiRequest.builder()
-            .envoyId(EnvoyId.builder()
-                .clusterId("test-cluster")
-                .nodeId("test-id")
+    private final ApiRequestPart request1 = ApiRequestPart.builder()
+            .envoy_id(EnvoyId.builder()
+                .cluster_id("test-cluster")
+                .node_id("test-id")
                 .build())
-            .endpointMappings(Arrays.asList(
+            .endpoint_mappings(Arrays.asList(
                 EndpointMapping.builder()
                     .to(EndpointDto.builder()
                         .address("127.0.0.1")
@@ -48,12 +41,12 @@ public class ServiceDiscoveryApi {
                     .build()))
             .version("0")
             .build();
-    private final ApiRequest request2 =  ApiRequest.builder()
-        .envoyId(EnvoyId.builder()
-            .clusterId("test-cluster")
-            .nodeId("test-id")
+    private final ApiRequestPart request2 =  ApiRequestPart.builder()
+        .envoy_id(EnvoyId.builder()
+            .cluster_id("test-cluster")
+            .node_id("test-id")
             .build())
-        .endpointMappings(Arrays.asList(
+        .endpoint_mappings(Arrays.asList(
             EndpointMapping.builder()
                 .to(EndpointDto.builder()
                     .address("127.0.0.1")
@@ -68,20 +61,20 @@ public class ServiceDiscoveryApi {
         .version("1")
         .build();
 
-    private final ApiRequest request3 =  ApiRequest.builder()
-        .envoyId(EnvoyId.builder()
-            .clusterId("test-cluster")
-            .nodeId("test-id")
+    private final ApiRequestPart request3 =  ApiRequestPart.builder()
+        .envoy_id(EnvoyId.builder()
+            .cluster_id("test-cluster")
+            .node_id("test-id")
             .build())
         .version("2")
         .build();
 
-    private final ApiRequest request4 = ApiRequest.builder()
-        .envoyId(EnvoyId.builder()
-            .clusterId("test-cluster")
-            .nodeId("test-id")
+    private final ApiRequestPart request4 = ApiRequestPart.builder()
+        .envoy_id(EnvoyId.builder()
+            .cluster_id("test-cluster")
+            .node_id("test-id")
             .build())
-        .endpointMappings(Arrays.asList(
+        .endpoint_mappings(Arrays.asList(
             EndpointMapping.builder()
                 .to(EndpointDto.builder()
                     .address("127.0.0.1")
@@ -120,22 +113,22 @@ public class ServiceDiscoveryApi {
 
     @GetMapping("update-result")
     public ResponseEntity<String> updateResult(
-        @PathParam("cluster") String cluster,
-        @PathParam("node_id") String  node_id
+            @PathParam("cluster_id") String cluster,
+            @PathParam("node_id") String node_id
     ) {
         HttpEntity<String> response = buildRequest(requests.get(last_id), version_id);
         log.info(String.format("[updateResult] version %d, id %d, response %s", version_id, last_id, response.getBody()));
         return ResponseEntity.ok(response.getBody());
     }
 
-    @PostMapping("new_status")
+    @PostMapping("service/version/deploy")
     public void newStatus(@RequestBody ApiResponse apiResponse) {
         log.info("[newStatus]  apiResponse = {}", apiResponse);
     }
 
-    private HttpEntity<String> buildRequest(ApiRequest apiRequest, int version_id) {
+    private HttpEntity<String> buildRequest(ApiRequestPart apiRequest, int version_id) {
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Type", "application/json");
+        headers.add("Content-Type", MediaType.APPLICATION_JSON_VALUE);
 
         apiRequest.setVersion(String.valueOf(version_id));
         ObjectMapper mapper = new ObjectMapper();

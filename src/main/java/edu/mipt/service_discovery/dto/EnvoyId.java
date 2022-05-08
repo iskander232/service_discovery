@@ -10,6 +10,6 @@ import lombok.Data;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class EnvoyId {
 
-    String clusterId;
-    String nodeId;
+    String cluster_id;
+    String node_id;
 }
