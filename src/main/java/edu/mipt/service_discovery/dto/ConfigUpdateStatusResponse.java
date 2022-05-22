@@ -3,12 +3,12 @@ package edu.mipt.service_discovery.dto;
 import lombok.Data;
 
 @Data
-public class ApiResponse2 {
+public class ConfigUpdateStatusResponse {
     String service_id;
     String version;
     String error;
 
-    public ApiResponse2(ApiResponse a) {
+    public ConfigUpdateStatusResponse(ConfigUpdateStatusResponseRaw a) {
         this.service_id = a.envoy_id.cluster_id;
         this.version = a.version;
         this.error = a.error;

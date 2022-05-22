@@ -10,7 +10,7 @@ import java.util.Collection;
 @Data
 @Builder
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class ApiResponse {
+public class ConfigUpdateStatusResponseRaw {
 
     EnvoyId envoy_id;
     String version;

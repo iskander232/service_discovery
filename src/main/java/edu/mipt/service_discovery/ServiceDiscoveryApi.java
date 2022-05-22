@@ -19,10 +19,10 @@ public class ServiceDiscoveryApi {
     int version_id;
 
     String contoller_url = "http://localhost:8079/controller/add-config";
-    List<ApiRequestPart> requests;
+    List<EnvoyConfig> requests;
     int last_id = 0;
 
-    private final ApiRequestPart request1 = ApiRequestPart.builder()
+    private final EnvoyConfig request1 = EnvoyConfig.builder()
             .envoy_id(EnvoyId.builder()
                 .cluster_id("test-cluster")
                 .node_id("test-id")
@@ -41,7 +41,7 @@ public class ServiceDiscoveryApi {
                     .build()))
             .version("0")
             .build();
-    private final ApiRequestPart request2 =  ApiRequestPart.builder()
+    private final EnvoyConfig request2 =  EnvoyConfig.builder()
         .envoy_id(EnvoyId.builder()
             .cluster_id("test-cluster")
             .node_id("test-id")
@@ -57,11 +57,22 @@ public class ServiceDiscoveryApi {
                     .port(10000)
                     .address("127.0.0.1")
                     .build())
-                .build()))
+                .build(),
+                EndpointMapping.builder()
+                    .to(EndpointDto.builder()
+                        .address("127.0.0.1")
+                        .port(8095)
+                        .build())
+                    .name("second")
+                    .from(EndpointDto.builder()
+                        .port(10000)
+                        .address("127.0.0.1")
+                        .build())
+                    .build()))
         .version("1")
         .build();
 
-    private final ApiRequestPart request3 =  ApiRequestPart.builder()
+    private final EnvoyConfig request3 =  EnvoyConfig.builder()
         .envoy_id(EnvoyId.builder()
             .cluster_id("test-cluster")
             .node_id("test-id")
@@ -69,7 +80,7 @@ public class ServiceDiscoveryApi {
         .version("2")
         .build();
 
-    private final ApiRequestPart request4 = ApiRequestPart.builder()
+    private final EnvoyConfig request4 = EnvoyConfig.builder()
         .envoy_id(EnvoyId.builder()
             .cluster_id("test-cluster")
             .node_id("test-id")
@@ -103,7 +114,7 @@ public class ServiceDiscoveryApi {
         if (0 <= id && id < requests.size()) {
             last_id = id;
             version_id++;
-            ResponseEntity<String> response = restTemplate.exchange(contoller_url, HttpMethod.POST, buildRequest(requests.get(id), version_id), String.class);
+            ResponseEntity<String> response = restTemplate.exchange(contoller_url, HttpMethod.POST, buildRequest(requests.get(id), version_id, true), String.class);
             log.info(String.format("[setSnapshotId] version %d, id %d, response %s", version_id, id, response.getBody()));
             return response;
         } else {
@@ -116,24 +127,29 @@ public class ServiceDiscoveryApi {
             @PathParam("cluster_id") String cluster,
             @PathParam("node_id") String node_id
     ) {
-        HttpEntity<String> response = buildRequest(requests.get(last_id), version_id);
+        HttpEntity<String> response = buildRequest(requests.get(last_id), version_id, false);
         log.info(String.format("[updateResult] version %d, id %d, response %s", version_id, last_id, response.getBody()));
         return ResponseEntity.ok(response.getBody());
     }
 
     @PostMapping("service/version/deploy")
-    public void newStatus(@RequestBody ApiResponse apiResponse) {
-        log.info("[newStatus]  apiResponse = {}", apiResponse);
+    public void newStatus(@RequestBody EnvoyConfig envoyConfig) {
+        log.info("[newStatus]  envoyConfig = {}", envoyConfig);
     }
 
-    private HttpEntity<String> buildRequest(ApiRequestPart apiRequest, int version_id) {
+    private HttpEntity<String> buildRequest(EnvoyConfig envoyConfig, int version_id, boolean isApiRequest) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", MediaType.APPLICATION_JSON_VALUE);
 
-        apiRequest.setVersion(String.valueOf(version_id));
+        envoyConfig.setVersion(String.valueOf(version_id));
         ObjectMapper mapper = new ObjectMapper();
         try {
-            String json = mapper.writeValueAsString(apiRequest);
+            String json;
+            if (isApiRequest) {
+                json = mapper.writeValueAsString(AddConfigsRequest.builder().version(envoyConfig.getVersion()).configs(List.of(envoyConfig)).build());
+            } else {
+                json = mapper.writeValueAsString(envoyConfig);
+            }
             log.info(json);
             return new HttpEntity<>(json, headers);
         } catch (JsonProcessingException e) {

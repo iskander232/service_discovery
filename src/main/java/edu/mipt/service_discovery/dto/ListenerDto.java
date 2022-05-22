@@ -19,4 +19,11 @@ public class ListenerDto {
     @NonNull
     @Getter
     EndpointDto listenerEndpoint;
+
+    public ListenerDto(EndpointDto endpointDto, String name, String clusterName) {
+        this.clusterName = clusterName;
+        this.listenerEndpoint = endpointDto;
+        this.name = name;
+        this.statPrefix = "/";
+    }
 }

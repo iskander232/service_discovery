@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -14,10 +15,19 @@ import java.util.List;
 @Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ClusterDto {
-
     @NonNull
     private String name;
     @NonNull
     private List<EndpointDto> endpointDtos;
 
+
+    public ClusterDto(EndpointDto endpointDto, String clusterName) {
+        this.name = clusterName;
+        this.endpointDtos = new ArrayList<>();
+        addEndpoint(endpointDto);
+    }
+
+    public void addEndpoint(EndpointDto endpointDto) {
+        endpointDtos.add(endpointDto);
+    }
 }

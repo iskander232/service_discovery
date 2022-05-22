@@ -10,8 +10,7 @@ import java.util.List;
 @Data
 @Builder
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class Apirequest {
-
+public class AddConfigsRequest {
     String version;
-    List<ApiRequestPart> configs;
+    List<EnvoyConfig> configs;
 }
